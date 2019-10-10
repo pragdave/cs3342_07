@@ -50,7 +50,7 @@ defmodule Test do
   #
   # To test your functions, you need to delete the following line
 
-  @tag :skip
+  #@tag :skip
 
   # then rerun `elixir ex01.exs`
   #
@@ -60,6 +60,10 @@ defmodule Test do
     count = Ex01.new_counter(5)
     assert  Ex01.next_value(count) == 5
     assert  Ex01.next_value(count) == 6
+
+    count2 = Ex01.new_counter(7)
+    assert  Ex01.next_value(count2) == 7
+    assert  Ex01.next_value(count2) == 8
   end
 
 end
@@ -74,14 +78,24 @@ end
 defmodule Ex01 do
 
   def counter(value \\ 0) do
-    # ...your code
+    receive do
+      {:next, from}  ->
+        send from, {:next_is, value}
+        counter(value + 1)
+      {:next_is, value} ->
+        counter(value)
+    end
   end
 
   def new_counter(initial_value \\ 0) do
-    # ... your code
+    apiCount = spawn Ex01, :counter, [initial_value]
   end
 
   def next_value(counter_pid) do
-    # ... your code
+    send counter_pid, {:next, self()}
+    receive do
+      {:next_is, val} ->
+        val
+    end
   end
 end
