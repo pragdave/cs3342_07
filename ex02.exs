@@ -31,10 +31,10 @@ defmodule Test do
   """
 
   test "counter using an agent" do
-    { :ok, counter } = «your code goes here»
-    value   = Agent.get_and_update(counter, «your code here»)
+    { :ok, counter } = Agent.start_link(fn -> 0 end)
+    value   = Agent.get_and_update(counter,  fn theCount -> {theCount, theCount+1} end)
     assert value == 0
-    value   = Agent.get_and_update(counter, «your code here»)
+    value   = Agent.get_and_update(counter, fn theCount -> {theCount, theCount + 1} end)
     assert value == 1
   end
 
@@ -46,7 +46,7 @@ defmodule Test do
   5 points
   """
 
-  @tag :skip
+  #@tag :skip
 
   test "higher level API interface" do
     count = Ex02.new_counter(5)
