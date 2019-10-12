@@ -74,7 +74,11 @@ end
 defmodule Ex01 do
 
   def counter(value \\ 0) do
-    # ...your code
+    receive do
+      {:next, from} ->
+        send from, {:next_is, value}
+        counter(value + 1)
+    end
   end
 
   def new_counter(initial_value \\ 0) do
