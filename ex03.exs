@@ -51,32 +51,39 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    Enum.count(collection)/process_count
-    |> Integer.parse()
-    |> Enum.chunk_every(collection)
-    |> Enum.flat_map(fn x -> createProcesses(x, function) end)
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    createProcesses(collection, function, process_count)
   end
 
-  def createProcesses(collection, function) do
-    Enum.map(collection, fn x -> createProcess(x, function) end)
+  def createProcesses(collection, function, process_count) do
+    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
+    |> Enum.flat_map( fn x -> createProcess(x, function, process_count) end)
   end
 
-
-  def createProcess(collection, function) do
-    pid = spawn(fn -> Ex03.applyFunc(collection, function, self()) end)
+  def createProcess(collection, function, p_count) do
+  #IO.puts("creating p")
+    #pid = spawn(reciever(p_count, []))
+    pid = self()
+    spawn(fn -> Ex03.applyFunc(collection, function, pid) end)
     receive do
-      {:fin, collection} ->
-        collection
+    {:fin, collection} ->
+      #IO.puts("answered p")
+      collection
+    end 
+  end
+
+  def reciever(p_count, collection) do
+    receive do
+    {:fin, newCol} ->
+      IO.puts("got #{inspect(newCol)}")
+      reciever(p_count - 1, [newCol, collection])
     end    
   end
 
+
   def applyFunc(collection, function, from) do
-    newCol = Enum.map(collection, function)
+    newCol = Enum.map(collection, fn x -> function.(x) end)
     send from, {:fin, newCol}
   end
-
 end
 
 
@@ -118,6 +125,7 @@ defmodule TestEx03 do
     { time2, result2 } = :timer.tc(fn -> pmap(range, 2, calc) end)
     { time3, result3 } = :timer.tc(fn -> pmap(range, 3, calc) end)
 
+    IO.puts("#{inspect(time1)} #{inspect(time2)} #{inspect(time3)}")
     expected = 1..6 |> Enum.map(&(&1*3))
     assert result1 == expected
     assert result2 == expected
