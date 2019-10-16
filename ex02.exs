@@ -31,16 +31,18 @@ defmodule Test do
   """
 
   test "counter using an agent" do
-    { :ok, counter } = «your code goes here»
-    value   = Agent.get_and_update(counter, «your code here»)
+    { :ok, counter } = Agent.start_link fn -> 0 end
+    value   = Agent.get_and_update(counter, fn counter -> {counter, counter + 1} end)
     assert value == 0
-    value   = Agent.get_and_update(counter, «your code here»)
+    value   = Agent.get_and_update(counter, fn counter -> {counter, counter + 1} end)
     assert value == 1
+    value   = Agent.get_and_update(counter, fn counter -> {counter, counter + 1} end)
+    assert value == 2                                    #   get      update
   end
 
   @doc """
   Next, enable this test, and add code to the Ex02 module at the
-  top of this file to make those tests run. Qgain, this code should use
+  top of this file to make those tests run. Again, this code should use
   an agent.
 
   5 points
