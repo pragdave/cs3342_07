@@ -63,7 +63,6 @@ defmodule Test do
   5 points
   """
 
-  @tag :skip
   test "global counter" do
     Ex02.new_global_counter
     assert Ex02.global_next_value == 0
@@ -92,13 +91,13 @@ defmodule Ex02 do
   @global_name :my_global_agent
 
   def new_global_counter(initial_value \\ 0) do
-    # « your code goes here»
+    Agent.start_link( fn -> initial_value end, name: :my_global_agent)
     # You can give an agent a name by adding the
     # `name: @global_name` option to start_link
   end
 
   def global_next_value do
-    # « your code goes here»
+    Agent.get_and_update(:my_global_agent, fn count -> {count, count + 1} end)
     # and you can use that name instead of a pid
     # in calls such as `get_and_update`
   end
