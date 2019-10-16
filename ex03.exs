@@ -53,6 +53,7 @@ defmodule Ex03 do
   def pmap(collection, process_count, function) do
     # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
+    collection |> Enum.into([]) |> Enum.map(function)
   end
 
   # and here...
