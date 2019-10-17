@@ -50,36 +50,44 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
-  def pmap(collection, process_count, function) do
+
+
+def pmap(collection, process_count, function) do
     # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
-    #Enum.count(collection)/process_count
-    #|> trunc()
-    #|> Enum.chunk_every(collection)
-    #|> Enum.flat_map(fn x -> processChunks(x, function) end)
     Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
-    |> Enum.flat_map(fn x -> processChunks(x, function) end)
+    |> Enum.map(fn x -> processChunks(x, function) end)
+    |> Enum.flat_map(fn x -> handleReceives(x) end)
   end
+
+
 
   # and here...
 
   def processChunks(collection, function) do
-    return_pid = self()
-    #Enum.map(collection, fn x -> makeProcess(x, function) end)
-    pid = spawn(fn -> Ex03.doFunc(collection, function, return_pid) end)
+    pid = spawn(fn -> Ex03.doFunc(collection, function) end)
+    {pid}
+  end
+
+  def doFunc(collection, function) do
+    receive do
+      {:start, return_id} ->
+        post_func_collection = Enum.map(collection, fn x -> function.(x) end)
+        send return_id, {:done, post_func_collection}
+    end
+  end
+
+  def handleReceives(pid) do
+#    receive do
+#      {pid, unique_r, post_func_collection} ->
+#        post_func_collection
+#    end
+
+    send elem(pid, 0), {:start, self()}
     receive do
       {:done, post_func_collection} ->
         post_func_collection
     end
-  end
-
-  def doFunc(collection, function, from) do
-    post_func_collection = Enum.map(collection, fn x -> function.(x) end)
-    send from, {:done, post_func_collection}
-  end
-
-  def receiver() do
-
   end
 
 #  def makeProcess(collection, function) do
