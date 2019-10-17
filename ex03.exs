@@ -51,13 +51,17 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
-    collection |> Enum.into([]) |> Enum.map(function)
+    chunk_val = div(Enum.count(collection),process_count)
+    chunks = Enum.chunk_every(collection, chunk_val)
+    pids = Enum.map(chunks, fn chunk -> spawn(Ex03, :chunk_process, [chunk, function, self()]) end)
+    result_list = Enum.map(pids, fn pid -> (receive do {^pid, value} -> value end) end)
+    List.flatten(result_list)
   end
 
-  # and here...
-
+  def chunk_process(chunk, function, pid) do
+    return = Enum.map(chunk, function)
+    send pid, {self(), return}
+  end
 end
 
 
