@@ -85,7 +85,7 @@ defmodule Ex01 do
   end
 
   def new_counter(initial_value \\ 0) do
-    count = spawn Ex01,:counter,[initial_value]
+    spawn Ex01,:counter,[initial_value]
   end
 
   def next_value(counter_pid) do
