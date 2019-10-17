@@ -52,12 +52,15 @@ defmodule Ex03 do
 
 #This solution was brainstormed with Nathan Srirama
 
+#Split list into chunks with the appropriate amount of elements and send off to the process creator
   def pmap(collection, process_count, function) do
     Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
-    |> createProcesses(function)
+    |> processChunks(function)
   end
 
-  def createProcesses(collection, function) do
+#This function maps each chunk to the process creator, then receives and flattens the finished product for
+#each of those processes, then returns the final list which has the function applied to each value
+  def processChunks(collection, function) do
     Enum.map(collection, fn x -> createProcess(x, function, self()) end)
     |> Enum.flat_map(fn {ref, pid} -> 
       receive do 
@@ -66,31 +69,22 @@ defmodule Ex03 do
     end)
   end
 
+#This function spawns a process for applying the function to a given chunk,
+#as well as giving it a unique reference to ensure correct ordering
   def createProcess(collection, function, from) do
     ref = make_ref()
     apply_pid = spawn(fn -> Ex03.applyFunc(collection, function, from, ref) end)
     {ref, apply_pid}
   end
   
+#This function maps each item in a chunk to that item having had the function applied,
+#then send the results back to processChunks
   def applyFunc(collection, function, dest, ref) do
     newCol = Enum.map(collection, fn x -> function.(x) end)
     send dest, {ref, self(), newCol}
   end
 
-  # def reciever(pid) do
-  # Process.register self(), String.to_atom(inspect(pid))
-  # IO.puts("created process named #{inspect(pid)}")
-  #   receive do
-  #   {:fin, newCol} ->
-  #     IO.puts("got #{inspect(newCol)}")
-  #     newCol 
-  #   end
-  # end
-
-
 end
-
-
 
 ######### no changes below here #############
 
