@@ -40,6 +40,10 @@ defmodule Test do
     send count, { :next, self() }
     assert_receive({ :next_is, value }, 10)
     assert value == 1
+
+    send count, { :next, self() }
+    assert_receive({ :next_is, value}, 10)
+    assert value == 2
   end
 
   # STEP 2:
@@ -50,7 +54,6 @@ defmodule Test do
   #
   # To test your functions, you need to delete the following line
 
-  @tag :skip
 
   # then rerun `elixir ex01.exs`
   #
@@ -74,14 +77,22 @@ end
 defmodule Ex01 do
 
   def counter(value \\ 0) do
-    # ...your code
+    receive do
+      {:next, from} ->
+        send from, {:next_is, value}
+        counter(value + 1)
+    end
   end
 
   def new_counter(initial_value \\ 0) do
-    # ... your code
+    spawn fn -> counter(initial_value) end
   end
 
   def next_value(counter_pid) do
-    # ... your code
+    send(counter_pid, {:next, counter_pid})
+    receive do
+      {:next_is, value} ->
+        value
+    end
   end
 end
