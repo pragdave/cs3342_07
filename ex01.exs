@@ -6,9 +6,13 @@
 #####################################################################
 
 # In this exercise you'll implement a simple process that acts as a
-# counter. Each time you send it `{:next, from}`, it will send to
+# counter.
+# Each time you send it `{:next, from}`, it will send to
+
 # `from` the tuple `{:next_is, value}`, and that value will increase
+
 # by one on each call. Your code will allow you to set the initial
+
 # value returned.
 
 
@@ -21,6 +25,9 @@ defmodule Test do
   #
   # This test assumes you have a function `Ex01.counter` that
   # can be spawned and which handles the `{:next, from}` message.
+
+
+
   # Your job is to implement the body of `counter` in the definition
   # of the Ex01 module tht follows these tests.
   #
@@ -33,11 +40,15 @@ defmodule Test do
 
   test "basic message interface" do
     count = spawn Ex01, :counter, []
+  # Send will send a message to a PID address.
     send count, { :next, self() }
+  # Assert_recieve will wait a set amount of time for a message to come back
     assert_receive({ :next_is, value }, 10)
+  # assert checks to see if value is 0
     assert value == 0
-
+  # will send the message, {:next, self()} to the PID address of count
     send count, { :next, self() }
+
     assert_receive({ :next_is, value }, 10)
     assert value == 1
   end
@@ -72,16 +83,39 @@ end
 ########################################
 
 defmodule Ex01 do
-
   def counter(value \\ 0) do
+  IO.puts(value)
+  #This looks for a message that comes from send
+    receive do
+
+      {:next, from} ->
+        {:next_is, value}
+      send from, {:next_is, value}
+      counter(value+1)
+      end
     # ...your code
+    #IO.puts("What was passed in:" + value)
+    #IO.puts("value 0 :" + value[0] + "\n value 1 : ")
+      #def calcCounter(:next_is, value), do: value = value + 1
+  #counter(value+1)
+  IO.puts("Does it ever get here?")
   end
 
   def new_counter(initial_value \\ 0) do
     # ... your code
+            pid = spawn(fn -> counter(initial_value) end)
+
+
   end
 
   def next_value(counter_pid) do
     # ... your code
+
+          send counter_pid, {:next, self()}
+          receive do
+            {:next_is, value} ->
+              value
+          end
+
   end
 end
