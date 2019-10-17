@@ -56,39 +56,37 @@ defmodule Ex03 do
 
   def createProcesses(collection, function, process_count) do
     Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
-    |> Enum.flat_map( fn x -> createProcess(x, function, process_count) end)
-    #|> Enum.map(fn pid -> reciever(pid))
+    |> Enum.map( fn x -> createProcess(x, function, self()) end)
+    |> Enum.flat_map(fn {ref, pid} -> receive do 
+          {^ref, ^pid, newCol} -> newCol
+       end
+    end)
   end
 
-  def createProcess(collection, function, p_count) do
-  #IO.puts("creating p")
-    #pid = spawn(reciever)
-    pid = self()
-    spawn(fn -> Ex03.applyFunc(collection, function, pid) end)
-    #spawn(fn -> Ex03.applyFunc(collection, function) end)
-    receive do
-    {:fin, collection} ->
-      #IO.puts("answered p")
-      collection
-    end 
+  def createProcess(collection, function, from) do
+    ref = make_ref()
+    apply_pid = spawn(fn -> Ex03.applyFunc(collection, function, from, ref) end)
+    {ref, apply_pid}
   end
 
-  def reciever(pid) do
-    receive do
-    {:fin, newCol, pid: ^pid} ->
-      IO.puts("got #{inspect(newCol)}")
-      newCol 
-    {:fid, newCol, pid: x} ->
-      reciever(pid)  
-    end
-  end
-
-
-  def applyFunc(collection, function, from) do
+  
+  def applyFunc(collection, function, dest, ref) do
     newCol = Enum.map(collection, fn x -> function.(x) end)
-    #Enum.map(collection, fn x -> function.(x) end)
-    send from, {:fin, newCol}
+    #IO.puts("Sending to #{inspect(dest)}")
+    send dest, {ref, self(), newCol}
   end
+
+  # def reciever(pid) do
+  # Process.register self(), String.to_atom(inspect(pid))
+  # IO.puts("created process named #{inspect(pid)}")
+  #   receive do
+  #   {:fin, newCol} ->
+  #     IO.puts("got #{inspect(newCol)}")
+  #     newCol 
+  #   end
+  # end
+
+
 end
 
 
@@ -130,7 +128,6 @@ defmodule TestEx03 do
     { time2, result2 } = :timer.tc(fn -> pmap(range, 2, calc) end)
     { time3, result3 } = :timer.tc(fn -> pmap(range, 3, calc) end)
 
-    IO.puts("#{inspect(time1)} #{inspect(time2)} #{inspect(time3)}")
     expected = 1..6 |> Enum.map(&(&1*3))
     assert result1 == expected
     assert result2 == expected
