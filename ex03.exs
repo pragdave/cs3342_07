@@ -50,16 +50,19 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
+#This solution was brainstormed with Nathan Srirama
+
   def pmap(collection, process_count, function) do
-    createProcesses(collection, function, process_count)
+    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
+    |> createProcesses(function)
   end
 
-  def createProcesses(collection, function, process_count) do
-    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
-    |> Enum.map( fn x -> createProcess(x, function, self()) end)
-    |> Enum.flat_map(fn {ref, pid} -> receive do 
-          {^ref, ^pid, newCol} -> newCol
-       end
+  def createProcesses(collection, function) do
+    Enum.map(collection, fn x -> createProcess(x, function, self()) end)
+    |> Enum.flat_map(fn {ref, pid} -> 
+      receive do 
+        {^ref, ^pid, newCol} -> newCol
+      end
     end)
   end
 
@@ -68,11 +71,9 @@ defmodule Ex03 do
     apply_pid = spawn(fn -> Ex03.applyFunc(collection, function, from, ref) end)
     {ref, apply_pid}
   end
-
   
   def applyFunc(collection, function, dest, ref) do
     newCol = Enum.map(collection, fn x -> function.(x) end)
-    #IO.puts("Sending to #{inspect(dest)}")
     send dest, {ref, self(), newCol}
   end
 
