@@ -64,7 +64,6 @@ defmodule Test do
 
 end
 
- @tag :skip
 ########################################
 #                                      #
 # This is the code you'll be changing  #
@@ -82,10 +81,14 @@ defmodule Ex01 do
   end
 
   def new_counter(initial_value \\ 0) do
-    # ... your code
+    {:next,initial_value}
   end
 
   def next_value(counter_pid) do
-    # ... your code
+    receive do
+      {:next,initial_value} ->
+        count = counter(initial_value)
+        send count, counter_pid
+    end
   end
 end
