@@ -51,14 +51,45 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
+    collection
+      |> splitIntoChunks(process_count)
+      |> convertToProcesses(function)
+      |>
     # I'm hoping to see a simple pipeline as the body of this function...
+  end
+
+  def splitIntoChunks(collection, numChunks) do
+    Enum.chunk_every(collection, numChunks, numChunks, [])
+  end
+
+  def convertToProcesses(collection, function) do
+    Enum.map(
+      collection,
+      fn subCollection -> spawn fn -> applyGivenFunction(subCollection, function) end end
+    )
+  end
+
+  def applyGivenFunction(subCollection, function) do
+    Enum.map(subCollection, fn element -> function.(element) end)
   end
 
   # and here...
 
 end
 
+#                       IN CLASS NOTES
+# ex: { 1,2,...100}
+# separate into [[1,...25], [26...50], ...] === [list1,list2,list3,list4]
+#   use function chunk()
+# make into processes
+#   get list of process ids ([pid1,pid2,pid3,pid4])
+#   use map() -> convert list into list
+#     so create helper function to convert sublist into running process (to pass to map)
+#     takes list as parameter and turn into process (result stored in map = pid)
+# get output from processes
+# convert processes back into list
+# want [[result1, ... result25], [...]...] -> flatmap results together
+#    make sure to receive in correct order
 
 
 ######### no changes below here #############
