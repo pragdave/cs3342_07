@@ -81,7 +81,6 @@ defmodule Ex01 do
       {:next_is, value} ->
         counter(value)
     end
-
   end
 
   def new_counter(initial_value \\ 0) do

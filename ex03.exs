@@ -51,8 +51,6 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
     Enum.chunk_every(collection, div(Enum.count(collection),process_count))
     |> process_chunks(function)
     |> List.flatten
