@@ -50,28 +50,38 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
+
+# Parent function for cuncurrently mapping a collection/func
   def pmap(collection, process_count, function) do
     divideChunks(collection, process_count)
+    #Divide chunks
     |> delegateProcesses(function)
+    #Delegate for chunks
     |> List.flatten
+    # Move chunks back into a flat list
   end
 
+# Divides the collection into the specified number of processes
   def divideChunks(collection, process_count) do
     collection |> Enum.chunk_every(div(Enum.count(collection), process_count))
   end
 
+# Delegates each separate chunk to a process
   def delegateProcesses(chunks, function) do
     Enum.map(chunks, fn chunk -> spawnProcess(chunk, function) end)
     |> Enum.map(fn pid -> (receive do {^pid, value} -> value end) end)
   end
 
+# Spawns a basic process to apply the function to the given chunk
   def spawnProcess(chunk, function) do
    spawn(Ex03, :mapChunk, [chunk, function, self()]) 
   end
 
+# This is where the "sub-processes" run, applying the function to each value in the collection
   def mapChunk(sublist, function, main) do
     result = sublist |> Enum.map(fn val -> function.(val) end)
     send main, {self(), result}
+    # Send the result back to the main process
   end
 
 end
