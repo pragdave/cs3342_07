@@ -57,13 +57,15 @@ defmodule Ex03 do
   def createProcesses(collection, function, process_count) do
     Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
     |> Enum.flat_map( fn x -> createProcess(x, function, process_count) end)
+    #|> Enum.map(fn pid -> reciever(pid))
   end
 
   def createProcess(collection, function, p_count) do
   #IO.puts("creating p")
-    #pid = spawn(reciever(p_count, []))
+    #pid = spawn(reciever)
     pid = self()
     spawn(fn -> Ex03.applyFunc(collection, function, pid) end)
+    #spawn(fn -> Ex03.applyFunc(collection, function) end)
     receive do
     {:fin, collection} ->
       #IO.puts("answered p")
@@ -71,17 +73,20 @@ defmodule Ex03 do
     end 
   end
 
-  def reciever(p_count, collection) do
+  def reciever(pid) do
     receive do
-    {:fin, newCol} ->
+    {:fin, newCol, pid: ^pid} ->
       IO.puts("got #{inspect(newCol)}")
-      reciever(p_count - 1, [newCol, collection])
-    end    
+      newCol 
+    {:fid, newCol, pid: x} ->
+      reciever(pid)  
+    end
   end
 
 
   def applyFunc(collection, function, from) do
     newCol = Enum.map(collection, fn x -> function.(x) end)
+    #Enum.map(collection, fn x -> function.(x) end)
     send from, {:fin, newCol}
   end
 end
