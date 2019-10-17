@@ -89,7 +89,7 @@ defmodule Ex01 do
   end
 
   def next_value(counter_pid) do
-    send(counter_pid, {:next, counter_pid})
+    send counter_pid, {:next, self()}
     receive do
       {:next_is, value} ->
         value
