@@ -53,7 +53,8 @@ defmodule Ex03 do
   def pmap(collection, process_count, function) do
     collection
       |> splitIntoChunks(process_count)
-      # |> convertToProcesses(function)
+      |> convertToProcesses(function)
+      |> runProcesses()
 
     # I'm hoping to see a simple pipeline as the body of this function...
   end
@@ -76,15 +77,35 @@ defmodule Ex03 do
   def convertToProcesses(collection, function) do
     Enum.map(
       collection,
-      fn subCollection -> spawn fn -> applyGivenFunction(subCollection, function) end end
+      fn subCollection -> getProcessForSublist(subCollection, function) end
     )
   end
 
-  def applyGivenFunction(subCollection, function) do
-    Enum.map(subCollection, fn element -> function.(element) end)
+  def getProcessForSublist(subCollection, function) do
+    spawn fn () -> applyGivenFunction(function, subCollection) end
   end
 
-  # and here...
+  def applyGivenFunction(function, list) do
+    receive do
+      {:apply, from} ->
+        newList = Enum.map(list, fn el -> function.(el) end)
+        send from, {:new_list, newList}
+        applyGivenFunction(function, newList)
+    end
+  end
+
+  def runProcesses(collection) do
+    Enum.map(collection, fn pid -> runProcess(pid) end)
+  end
+
+  def runProcess(pid) do
+    send pid, {:apply, self()}
+    receive do
+      {:new_list, newList} ->
+        send pid, newList
+    end
+
+  end
 
 end
 
