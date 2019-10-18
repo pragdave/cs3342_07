@@ -86,6 +86,6 @@ defmodule Ex01 do
       receive do 
         { :next_is, value } -> 
           value
-        end
+      end
   end
 end
