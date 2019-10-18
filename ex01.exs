@@ -49,9 +49,6 @@ defmodule Test do
   # a higher level API. The test below shows how this API will be used.
   #
   # To test your functions, you need to delete the following line
-
- 
-
   # then rerun `elixir ex01.exs`
   #
   # 5 points
@@ -75,20 +72,20 @@ defmodule Ex01 do
   def counter(value \\ 0) do
     receive do  
       {:next, from} ->
-        send from, { :next_is, value} 
+        send from, { :next_is, value } 
         counter(value + 1)
     end
   end
 
   def new_counter(initial_value \\ 0) do
-    {:next,initial_value}
+    spawn Ex01, :counter, [initial_value]
   end
 
   def next_value(counter_pid) do
-    receive do
-      {:next,initial_value} ->
-        count = counter(initial_value)
-        send count, counter_pid
-    end
+      send counter_pid, { :next, self() }
+      receive do 
+        { :next_is, value } -> 
+          value
+        end
   end
 end
