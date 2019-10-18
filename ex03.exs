@@ -53,9 +53,32 @@ defmodule Ex03 do
   def pmap(collection, process_count, function) do
     # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
+    collection
+    |> Ex03.splitbyprocess(process_count)
+    |> Ex03.mapfunctions(function)
+    |> List.flatten()
   end
 
-  # and here...
+  def splitbyprocess(collection, process_num) do
+    Enum.chunk_every(collection, div(Enum.count(collection),process_num))
+  end
+
+
+  def mapfunctions(chunks, function) do
+    me = self()
+    Enum.map(chunks, fn (chunk) ->
+      spawn(fn -> process_chunk(function, chunk, me) end) end)
+    |> Enum.map(fn (pid) ->
+      receive do
+        {^pid, value} ->
+          value end
+        end)
+  end
+
+  def process_chunk(function, chunk, pid) do
+    processed_chunk = Enum.map(chunk, function)
+    send pid, {self(), processed_chunk}
+  end
 
 end
 

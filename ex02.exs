@@ -31,10 +31,10 @@ defmodule Test do
   """
 
   test "counter using an agent" do
-    { :ok, counter } = «your code goes here»
-    value   = Agent.get_and_update(counter, «your code here»)
+    { :ok, counter } = Agent.start_link(fn -> 0 end)
+    value   = Agent.get_and_update(counter, fn counter -> {counter, counter+1} end)
     assert value == 0
-    value   = Agent.get_and_update(counter, «your code here»)
+    value   = Agent.get_and_update(counter, fn counter -> {counter, counter + 1} end)
     assert value == 1
   end
 
@@ -46,7 +46,6 @@ defmodule Test do
   5 points
   """
 
-  @tag :skip
 
   test "higher level API interface" do
     count = Ex02.new_counter(5)
@@ -62,8 +61,6 @@ defmodule Test do
 
   5 points
   """
-
-  @tag :skip
   test "global counter" do
     Ex02.new_global_counter
     assert Ex02.global_next_value == 0
@@ -81,23 +78,26 @@ end
 defmodule Ex02 do
 
   def new_counter(initial_value \\ 0) do
-    # « your code goes here»
+    {:ok, myagent} = Agent.start_link(fn -> initial_value end)
+    myagent
   end
 
   def next_value(agent) do
-    # « your code goes here»
+    nextvalue = Agent.get_and_update(agent, fn total -> {total, total + 1} end)
+    nextvalue
   end
 
   @global_name :my_global_agent
 
   def new_global_counter(initial_value \\ 0) do
-    # « your code goes here»
     # You can give an agent a name by adding the
     # `name: @global_name` option to start_link
-  end
+    {:ok, myagent} = Agent.start_link(fn -> initial_value end, [name: @global_name])
+    end
 
   def global_next_value do
-    # « your code goes here»
+    nextvalue = Agent.get_and_update(:my_global_agent, fn total -> {total, total + 1} end)
+    nextvalue
     # and you can use that name instead of a pid
     # in calls such as `get_and_update`
   end
