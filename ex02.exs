@@ -85,7 +85,7 @@ defmodule Ex02 do
 
   def next_value(agent) do
     # « your code goes here»
-	value = Agent.get_and_update(agent, fn val -> {val, val+1} end)
+	Agent.get_and_update(agent, fn val -> {val, val+1} end)
   end
 
   @global_name :my_global_agent
