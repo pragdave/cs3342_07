@@ -51,12 +51,19 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    function(split(collection, process_count))
   end
 
-  # and here...
+  def split(list, n) do
+    x = split_by(list, n)
+    lists = Enum.chunk_every(list, x)
+  end
 
+  def split_by(list, n) do
+    len = length(list)
+    by = len/n 
+    fn -> by 
+  end
 end
 
 
