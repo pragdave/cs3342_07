@@ -59,13 +59,18 @@ defmodule Ex03 do
   end
 
   def splitIntoChunks(collection, numProcesses) do
-    collectionLength = Enum.count(collection)
-    countElements = Kernel.trunc(collectionLength / numProcesses)
-    splitCollection = Enum.chunk_every(collection, countElements, countElements,[])
-    if length(splitCollection) != numProcesses do
-      {leftover, _restCollection} = List.pop_at(splitCollection, numProcesses - 1)
-      List.update_at(splitCollection, numProcesses - 1, &(List.insert_at(&1, numProcesses, leftover)))
+    countElements = Enum.count(collection) / numProcesses
+      |> Kernel.trunc()
+    Enum.chunk_every(collection, countElements, countElements,[])
+      |> ensureCorrectNumChunks(numProcesses)
+  end
+
+  def ensureCorrectNumChunks(collection, numProcesses) do
+    if length(collection) != numProcesses do
+      {leftover, _restCollection} = List.pop_at(collection, numProcesses - 1)
+      List.update_at(collection, numProcesses - 1, &(List.insert_at(&1, numProcesses, leftover)))
     end
+    collection
   end
 
   def convertToProcesses(collection, function) do
