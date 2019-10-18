@@ -53,13 +53,19 @@ defmodule Ex03 do
   def pmap(collection, process_count, function) do
     collection
       |> splitIntoChunks(process_count)
-      |> convertToProcesses(function)
-      |>
+      # |> convertToProcesses(function)
+
     # I'm hoping to see a simple pipeline as the body of this function...
   end
 
-  def splitIntoChunks(collection, numChunks) do
-    Enum.chunk_every(collection, numChunks, numChunks, [])
+  def splitIntoChunks(collection, numProcesses) do
+    collectionLength = Enum.count(collection)
+    countElements = Kernel.trunc(collectionLength / numProcesses)
+    splitCollection = Enum.chunk_every(collection, countElements, countElements,[])
+    if length(splitCollection) != numProcesses do
+      {leftover, _restCollection} = List.pop_at(splitCollection, numProcesses - 1)
+      List.update_at(splitCollection, numProcesses - 1, &(List.insert_at(&1, numProcesses, leftover)))
+    end
   end
 
   def convertToProcesses(collection, function) do
