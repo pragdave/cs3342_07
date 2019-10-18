@@ -34,7 +34,7 @@ defmodule Test do
     { :ok, counter } = Agent.start(fn -> 0 end)
     value   = Agent.get_and_update(counter, fn state -> {state, state + 1} end)
     assert value == 0
-    value   = Agent.get_and_update(counter, fn state -> {state, state + 1} end )
+    value   = Agent.get_and_update(counter, fn state -> {state, state + 1} end)
     assert value == 1
   end
 
@@ -61,7 +61,6 @@ defmodule Test do
   5 points
   """
 
-  @tag :skip
   test "global counter" do
     Ex02.new_global_counter
     assert Ex02.global_next_value == 0
@@ -93,11 +92,13 @@ defmodule Ex02 do
     # « your code goes here»
     # You can give an agent a name by adding the
     # `name: @global_name` option to start_link
+    Agent.start_link(fn -> initial_value end, name: @global_name)
   end
 
   def global_next_value do
     # « your code goes here»
     # and you can use that name instead of a pid
     # in calls such as `get_and_update`
+    Agent.get_and_update(@global_name, fn state -> {state, state + 1} end )
   end
 end
