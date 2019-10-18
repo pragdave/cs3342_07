@@ -56,36 +56,31 @@ def pmap(collection, process_count, function) do
     # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
     Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
-    |> Enum.map(fn x -> processChunks(x, function) end)
-    |> Enum.flat_map(fn x -> handleReceives(x) end)
+    |> Enum.map(fn x -> processChunks(x, function, self()) end)
+    |> Enum.flat_map(fn {pid} -> receive do
+        {pid, post_func_collection} ->
+          post_func_collection
+        end
+       end)
   end
 
 
 
   # and here...
 
-  def processChunks(collection, function) do
-    pid = spawn(fn -> Ex03.doFunc(collection, function) end)
+  def processChunks(collection, function, from) do
+    pid = spawn(fn -> Ex03.doFunc(collection, function, from) end)
     {pid}
   end
 
-  def doFunc(collection, function) do
-    receive do
-      {:start, return_id} ->
-        post_func_collection = Enum.map(collection, fn x -> function.(x) end)
-        send return_id, {:done, post_func_collection}
-    end
+  def doFunc(collection, function, send_to) do
+    post_func_collection = Enum.map(collection, fn x -> function.(x) end)
+    send send_to, {self(), post_func_collection}
   end
 
-  def handleReceives(pid) do
-#    receive do
-#      {pid, unique_r, post_func_collection} ->
-#        post_func_collection
-#    end
-
-    send elem(pid, 0), {:start, self()}
+  def handleReceives(pid, unique_r) do
     receive do
-      {:done, post_func_collection} ->
+      {pid, unique_r, post_func_collection} ->
         post_func_collection
     end
   end
