@@ -51,19 +51,60 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    function(split(collection, process_count))
+    messwithit(collection, process_count, function)
   end
 
-  def split(list, n) do
-    x = split_by(list, n)
-    lists = Enum.chunk_every(list, x)
+  def messwithit(list, n, func) do
+    lists = Enum.map(list, func)
   end
 
-  def split_by(list, n) do
-    len = length(list)
-    by = len/n 
-    fn -> by 
-  end
+
+
+#  def messwithit(lists, next_pid, funcs) do 
+#    receive do
+#      n -> send next_pid, n + 1
+#      func -> Enum.map(lists, funcs)
+#    end
+#  end
+
+#  def processes(list, n, func) do 
+#    code_to_run = fn (_, send_to) ->
+#      spawn(Chain, :messwithit, [send_to])
+#    end
+
+#    last = Enum.reduce(1..n, self(), code_to_run)
+
+#    send(last, 0)
+#  end
+
+#  def run(n) do 
+#    :timer.tc(Chain, :processes, [n])
+#    |> IO.inspect
+#  end
+
+
+######################################
+#  def split(list, n) do
+#    x = split_by(list, n)
+#    lists = Enum.chunk_every(list, x)
+#  end
+
+#  def split_by(list, n) do
+#    len = length(list)
+#    by = len/n 
+#  end
+
+#  def messwithit(func, list) do
+#    lists = Enum.map(list, func)
+#  end
+
+#  def putitalltogether(lists) do
+#    final = Enum.flat_map(lists)
+#    IO.put("List #{final}")
+#  end
+#######################################
+
+
 end
 
 
