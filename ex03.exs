@@ -95,7 +95,7 @@ defmodule Ex03 do
   end
 
   def runProcesses(collection) do
-    Enum.map(collection, fn pid -> runProcess(pid) end)
+    Enum.flat_map(collection, fn pid -> runProcess(pid) end)
   end
 
   def runProcess(pid) do
