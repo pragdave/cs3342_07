@@ -11,6 +11,8 @@
 # by one on each call. Your code will allow you to set the initial
 # value returned.
 
+#DYLAN WEEKS , 47343235, 10/18/19
+
 
 ExUnit.start()
 
@@ -50,7 +52,6 @@ defmodule Test do
   #
   # To test your functions, you need to delete the following line
 
-  @tag :skip
 
   # then rerun `elixir ex01.exs`
   #
@@ -74,14 +75,24 @@ end
 defmodule Ex01 do
 
   def counter(value \\ 0) do
-    # ...your code
+    receive do
+        {:next, sent} -> 
+            send sent, {:next_is, value} 
+            counter(1+value) 
+    end
   end
 
   def new_counter(initial_value \\ 0) do
-    # ... your code
+    spawn fn () -> 
+        counter(initial_value)
+    end
   end
 
   def next_value(counter_pid) do
-    # ... your code
+    send counter_pid, {:next, self()} 
+    receive do
+        {:next_is, sent} ->
+            send counter_pid, sent
+    end
   end
 end

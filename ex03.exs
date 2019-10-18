@@ -1,21 +1,17 @@
 defmodule Ex03 do
 
   @moduledoc """
-
   `Enum.map` takes a collection, applies a function to each element in
   turn, and returns a list containing the result. It is an O(n)
   operation.
-
   Because there is no interaction between each calculation, we could
   process all elements of the original collection in parallel. If we
   had one processor for each element in the original collection, that
   would turn it into an O(1) operation in terms of elapsed time.
-
   However, we don't have that many processors on our machines, so we
   have to compromise. If we have two processors, we could divide the
   map into two chunks, process each independently on its own
   processor, then combine the results.
-
   You might think this would halve the elapsed time, but the reality
   is that the initial chunking of the collection and the eventual
   combining of the results both take time. As a result, the speed up
@@ -24,26 +20,20 @@ defmodule Ex03 do
   as the overhead of chunking and combining will be relatively less.
   If the mapping function is trivial, then parallelizing the code will
   actually slow it down.
-
   Your mission is to implement a function
-
       pmap(collection, process_count, func)
-
   This will take the collection, split it into n chunks, where n is
   the process count, and then run each chunk through a regular map
   function, but with each map running in a separate process. It then
   combines the results (in the correct order). It should use
   spawn and message passing (and not agents, tasks, or genservers).
   It should not use any conditional logic (if/cond/case).
-
   Useful functions include `Enum.map/3`, `Enum.chunk_every/4`, and
   `Enum.flat_map/1`.
-
   Feel free to use one or more helper functions... (there may be some
   extra credit for code that is well factored and that looks good).
   My solution is about 40 lines (including some blank ones) and
   six helper functions.
-
   35 points:
      it works and passes all tests:    25
      it contains no conditional logic:  3
@@ -51,11 +41,31 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+        n = Enum.count(collection)
+        n = n/process_count
+        n = round(n)
+        collection = collection |> Enum.chunk_every(n)   
+        counter = 1
+        collection = while(collection, process_count, function, counter)
+        collection = List.flatten(collection)
+        collection
   end
 
-  # and here...
+
+  def while(collection, process_count, function, counter) do
+        if counter <= process_count do
+        sendList = Enum.at(collection, counter-1)
+        listBack = Enum.map(sendList,  function)
+        IO.inspect listBack
+        IO.puts "here"
+        IO.inspect counter
+        collection = List.replace_at(collection, counter - 1, listBack)
+        counter = counter + 1
+        while(collection, process_count, function, counter)
+        collection
+        end
+        
+  end
 
 end
 
