@@ -51,6 +51,7 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
+<<<<<<< HEAD
     messwithit(collection, process_count, function)
   end
 
@@ -104,7 +105,21 @@ defmodule Ex03 do
 #  end
 #######################################
 
+=======
+    function(split(collection, process_count))
+  end
 
+  def split(list, n) do
+    x = split_by(list, n)
+    lists = Enum.chunk_every(list, x)
+  end
+>>>>>>> ae25f1f03b33a7d6ec9b28f375524a5c0eb7b0d7
+
+  def split_by(list, n) do
+    len = length(list)
+    by = len/n 
+    fn -> by 
+  end
 end
 
 
