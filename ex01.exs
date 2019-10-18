@@ -76,11 +76,12 @@ defmodule Ex01 do
 
   def counter(value \\ 0) do
     receive do
-        {:next, sent} -> 
-            send sent, {:next_is, value} 
+        {:next, sent} -> send sent, {:next_is, value} 
             counter(1+value) 
     end
   end
+
+
 
   def new_counter(initial_value \\ 0) do
     spawn fn () -> 
@@ -88,11 +89,12 @@ defmodule Ex01 do
     end
   end
 
+  
+
   def next_value(counter_pid) do
     send counter_pid, {:next, self()} 
-    receive do
-        {:next_is, sent} ->
-            send counter_pid, sent
-    end
+      receive do
+          {:next_is, sent} -> send counter_pid, sent
+      end
   end
 end
