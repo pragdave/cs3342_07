@@ -1,3 +1,5 @@
+#Alex Yang
+
 defmodule Ex03 do
 
   @moduledoc """
@@ -50,21 +52,93 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
+  def split(collection, process_count) do
+    tempList = Enum.to_list(collection) #converts collection to a list
+    num = div(List.last(tempList), process_count) + 1 #num = the size of each of the sublists(add one in case uneven split)
+    Enum.chunk_every(collection, num, num, [])
+    
+    #this part literally took me forever
+    #allows split to split the list into sublists and handles if the size of sublists is not evenly divided
+    #improperList = Enum.chunk_every(collection, num)
+    #num = [Enum.at(improperList, process_count)]
+    #improperList = List.replace_at(improperList, process_count-1, Enum.at(improperList, process_count-1) ++ num)
+    #improperList = List.delete_at(improperList, process_count)
+    #[last | rest] = Enum.reverse(improperList)
+
+    #returns the properly split list
+    #properList = Enum.reverse(rest) ++ [Enum.reject(Enum.at(improperList, process_count-1), &is_nil/1)]
+
+    #this block of code makes sure that the last number is added to the 
+    #  last sublist if process_count == 3
+    #improperList = Enum.chunk_every(collection, num)
+    #[remainder | otherSubLists] = Enum.reverse(improperList)
+    #[lastSubList | rest] = otherSubLists
+    #splitLists = Enum.reverse([Enum.concat(lastSubList, remainder) | rest])
+    
+    #Enum.at(splitLists, 0)
+
+  end
+
+
+  def process(collection, function) do
+    #result = Enum.map(Enum.at(collection, process_count), function)
+    #caller = self()
+    #send caller, {:result, result}
+    mapFunc = fn x -> Enum.map(x, function) end
+    Enum.flat_map(collection, &mapFunc.(&1))
+    #receive do
+    #  {:result, r} ->
+    #    r
+    #end
+  end
+
+  def applyFunc(collection, function) do
+    Enum.map(collection, function)
+  end
+
   def pmap(collection, process_count, function) do
     # your code goes here
+    #a = split(collection, process_count) #|> flatten()
+    
+    #a = Enum.chunk_every(collection,process_count)
+    #process(a, function)
+    #process(collection, function)
+    #Enum.map(collection, function)
     # I'm hoping to see a simple pipeline as the body of this function...
+    split(collection, process_count) |> process(function)
   end
 
   # and here...
 
 end
 
+ExUnit.start
+
+defmodule MyTests do
+  use ExUnit.Case
+  import Ex03
+  @moduledoc """
+  test "split" do
+    a = 1..10
+    b = Enum.chunk_every(a,3)
+    assert split(a, 1) == b
+  end
+  #
+  test "split" do
+    a = 1..10
+    b = Enum.chunk_every(a,3)
+    assert pmap(a, 2, &(&1+1)) == nil
+  end
+  """
+end
 
 
 ######### no changes below here #############
+#ExUnit.start
 
-ExUnit.start
 defmodule TestEx03 do
+  #@moduledoc """
+  
   use ExUnit.Case
   import Ex03
 
@@ -88,8 +162,8 @@ defmodule TestEx03 do
     # random calculation to burn some time.
     # Note that the sleep value reduces
     # with successive values, so the
-    # later values will complete firest. Does
-    # your code correctl;y gather the results in the
+    # later values will complete first. Does
+    # your code correctly gather the results in the
     # right order?
 
     calc  = fn n -> :timer.sleep(10-n); n*3 end
@@ -106,5 +180,5 @@ defmodule TestEx03 do
     assert time2 < time1 * 0.75   # in theory should be 0.5
     assert time3 < time1 * 0.45   # and 0.33
   end
-
+  #"""
 end
