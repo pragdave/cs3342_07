@@ -52,11 +52,56 @@ defmodule Ex03 do
 
   def pmap(collection, process_count, function) do
     # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    # I'm hoping to see a simple pipeline as the body of this function
+    return = create_processes(process_count, function)
+        |> split(collection, process_count)
+        |> call
+        |> combine
+  end
+  # and here...
+  def combine(eofe) do
+    reee = Enum.concat(eofe)
+  end
+  def create_processes(process_count, function) do
+    for i <- 0..process_count do
+      make_procs(function)
+    end
   end
 
-  # and here...
+  def split(nodes, collection, process_count) do
+    temp = Enum.chunk_every(collection, Integer.floor_div(Enum.count(collection),process_count), Integer.floor_div(Enum.count(collection),process_count), [])
+    
+    Enum.zip(nodes, temp)
 
+  end
+
+  def call(list_of_pids) do
+    for i <- 0..(length(list_of_pids)-1) do
+      temp_pid = Enum.at(list_of_pids, i) |> elem(0)
+      temp_list = Enum.at(list_of_pids, i) |> elem(1) 
+      send(temp_pid, {:perform_func,  temp_list ,self()} )
+      receive do
+        {:result_is, collection} ->
+        collection
+      end
+    end
+    #returns an enum of enums
+  end
+
+  def make_procs(function) do
+    spawn fn ->
+      procs(function)
+    end
+  end
+
+  def procs(function \\ 0) do
+    receive do
+      {:perform_func, collection, senderpid} ->
+        result = Enum.map(collection, function)
+        send(senderpid, {:result_is, result})
+        procs()
+    end
+  end
 end
 
 
