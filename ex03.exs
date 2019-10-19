@@ -51,15 +51,51 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    range_to_enumerable(collection)
+    |> splitmap(process_count)
+    |> create_slice(function)
+    |> repair_slices
+    |> flatten
   end
 
-  # and here...
+  def range_to_enumerable(range) do
+    Enum.map(range, fn x -> x end)
+  end
 
+  def splitmap(collection, process_count) do
+    collection 
+    |> Enum.chunk_every(div(length(collection), process_count))
+  end
+
+  def create_slice(slices, function) do
+    masterpid = self()
+    Enum.map(slices, fn chunk -> 
+      spawn(fn -> 
+        slice_map(chunk, function, masterpid) 
+      end) 
+    end)
+  end
+
+  def slice_map(split, func, pid) do
+    out_chunk = split 
+    |> Enum.map(func)
+    send pid, {self(), out_chunk}
+  end
+
+  def repair_slices(slices) do
+    Enum.map(slices, fn (pid) -> 
+      receive do
+        {^pid, item} -> 
+          item
+        end
+      end)
+  end
+
+  def flatten(collection) do
+    collection 
+    |> Enum.flat_map(fn x -> x end)
+  end
 end
-
-
 
 ######### no changes below here #############
 
