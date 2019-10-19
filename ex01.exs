@@ -50,7 +50,6 @@ defmodule Test do
   #
   # To test your functions, you need to delete the following line
 
-  @tag :skip
 
   # then rerun `elixir ex01.exs`
   #
