@@ -49,13 +49,29 @@ defmodule Ex03 do
      it contains no conditional logic:  3
      it is nicely structured            7
   """
-
+ 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
+     |>  Ex03.mapping(function)
+     |>  List.flatten()
   end
 
-  # and here...
+  def mapping(comchunk,function) do
+  initial = self()                  # else it will cause a timeout 
+    Enum.map(comchunk, fn (chunk) ->
+      spawn(fn ->   
+        send initial, {self(), Enum.map(chunk, function)}
+       end
+      ) 
+     end
+    )    
+   |> Enum.map(fn (pid) ->
+      receive do
+        {^pid, variable} -> variable 
+           end
+        end
+      )
+    end
 
 end
 
