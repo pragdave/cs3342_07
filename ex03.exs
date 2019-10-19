@@ -50,13 +50,27 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
-  def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+# "running" function
+def pmap(collection, process_count, function) do
+    Enum.chunk_every(collection, div(Enum.count(collection),process_count))
+    |> makeMap(function)
+    |> process(function)
+    |> List.flatten
   end
 
-  # and here...
+  def makeMap(collection, function) do
+    collection |> Enum.map(fn sublist -> spawn(Ex03,:process_one_chunk,[sublist,function,self()]) end)
+  end
 
+  def process(collection, function) do
+    collection |> Enum.map(fn pid -> (receive do {^pid, value} -> value end) end)
+  end
+
+
+  def process_one_chunk(sublist, function, main) do
+    result = Enum.map(sublist, function)
+    send main, {self(), result}
+  end
 end
 
 
