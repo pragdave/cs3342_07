@@ -53,45 +53,26 @@ defmodule Ex03 do
 
 
 def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
-    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count))
+    #Enum.count(collection)/process_count doesn't work because the stuff you pipe into a function must be the first argument
+    #|> trunc()                               ^I think
+    #|> Enum.chunk_every(collection)
+    Enum.chunk_every(collection, trunc(Enum.count(collection)/process_count)) 
     |> Enum.map(fn x -> processChunks(x, function, self()) end)
-    |> Enum.flat_map(fn {pid} -> receive do
-        {pid, post_func_collection} ->
+    |> Enum.flat_map(fn pid -> receive do
+        {^pid, post_func_collection} ->
           post_func_collection
         end
        end)
   end
 
-
-
-  # and here...
-
   def processChunks(collection, function, from) do
     pid = spawn(fn -> Ex03.doFunc(collection, function, from) end)
-    {pid}
   end
 
   def doFunc(collection, function, send_to) do
     post_func_collection = Enum.map(collection, fn x -> function.(x) end)
     send send_to, {self(), post_func_collection}
   end
-
-  def handleReceives(pid, unique_r) do
-    receive do
-      {pid, unique_r, post_func_collection} ->
-        post_func_collection
-    end
-  end
-
-#  def makeProcess(collection, function) do
-#    pid = spawn(fn -> Ex03.doFunc(collection, function, self()) end)
-#    receive do
-#      {:done, post_func_collection} ->
-#        post_func_collection
-#    end
-#  end
 
 end
 
