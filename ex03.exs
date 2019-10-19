@@ -51,15 +51,33 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    collection
+    |> getChunks(process_count)
+    |> createProcesses(function)
+    |> mergeProcesses()
+ end
+
+  def getChunks(collection, process_count) do
+    size = div Enum.count(collection),process_count
+    Enum.chunk_every(collection, size)
   end
 
-  # and here...
+  def createProcesses(chunks, function) do
+    chunks
+    |> Enum.map(fn chunk -> spawn Ex03, :counter, [self(), chunk, function] end)
+  end
 
+  def counter(pid, chunk, function) do
+    result = Enum.map(chunk,function)
+    send pid, {:next, self(), result}
+  end
+
+  def mergeProcesses(pid) do 
+    pid
+    |> Enum.map(fn pid -> (receive do {:next, ^pid, result} -> result end) end)
+    |> Enum.flat_map(fn x -> x end)
+  end
 end
-
-
 
 ######### no changes below here #############
 
@@ -89,7 +107,7 @@ defmodule TestEx03 do
     # Note that the sleep value reduces
     # with successive values, so the
     # later values will complete firest. Does
-    # your code correctl;y gather the results in the
+    # your code correctly gather the results in the
     # right order?
 
     calc  = fn n -> :timer.sleep(10-n); n*3 end
