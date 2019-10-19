@@ -51,13 +51,38 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    divideCollection(collection, process_count) 
+    #divide the collection into chunks
+    |> mappingTogether(function) 
+    #run each chunk and mapping it
+    |> List.flatten
+    #collect chunks and merge them into a flat list
   end
 
-  # and here...
+  def divideCollection(collection, process_count) do
+    Enum.chunk_every(collection,div(Enum.count(collection),process_count))
+    #chunk_every(enum,cout)
+    #divide collection into required number of parts 
+  end
 
-end
+  #mapping each chunk
+  def mappingTogether(chunks, function) do
+    thisOne = self()
+    #I dont know why, but if I use self() in following function, the program run into infinite loop
+    #using thisOne to avoid troubles if there is any build-in variable called "this"
+    Enum.map(chunks,fn chunk -> spawn (fn -> mapSubchunk(function,chunk,thisOne)end) end)
+    |>Enum.map(fn pid -> (receive do {^pid, value} -> value end) end)
+    #for each chunk divided in divideCollection, mapping each value
+  end
+
+  #this sub helper is for helping to mapping value 
+  #mapping each value in the whole collection
+  def mapSubchunk(function,source,pid) do
+    process = source |> Enum.map(fn data -> function.(data) end)
+    send pid, {self(), process}
+  end#end chunking
+
+end#end ex03
 
 
 
