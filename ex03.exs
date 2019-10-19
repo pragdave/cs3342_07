@@ -55,7 +55,7 @@ defmodule Ex03 do
     |> splitmap(process_count)
     |> create_slice(function)
     |> repair_slices
-    |> flatten
+    |> Enum.flat_map(fn x -> x end)
   end
 
   def range_to_enumerable(range) do
@@ -91,10 +91,6 @@ defmodule Ex03 do
       end)
   end
 
-  def flatten(collection) do
-    collection 
-    |> Enum.flat_map(fn x -> x end)
-  end
 end
 
 ######### no changes below here #############
