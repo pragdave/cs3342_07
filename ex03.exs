@@ -50,9 +50,22 @@ defmodule Ex03 do
      it is nicely structured            7
   """
 
+  def map(list, function) do
+    Enum.map(list,function)
+  end
+
+  def separate(collection, process_count, function) do
+    temp = [] ++ [collection]
+    list = Enum.flat_map(temp, &(&1))
+
+    Enum.chunk_every(list, ceil(length(list)/process_count)) 
+    |> map(function)
+  end
+
   def pmap(collection, process_count, function) do
     # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
+    collection |> separate(process_count, function)
   end
 
   # and here...
