@@ -92,7 +92,8 @@ defmodule Ex02 do
     Agent.get_and_update(agent, fn total -> {total, total+1} end)
   end
 
-  @global_name :JamesBond
+  #I hope you like this textArt
+  @global_name :JamesBond #(James Bond) (° ͜ʖ°)=ε/̵͇̿̿/’̿’̿ ̿      ̿ ̿’̿’/̵͇̿̿/ε(o_o) (surprised gunman)
 
   def new_global_counter(initial_value \\ 0) do
     # « your code goes here»
