@@ -61,7 +61,7 @@ defmodule Test do
   #
   # To test your functions, you need to delete the following line
 
-  @tag :skip
+  #@tag :skip
 
   # then rerun `elixir ex01.exs`
   #
@@ -84,7 +84,6 @@ end
 
 defmodule Ex01 do
   def counter(value \\ 0) do
-  IO.puts(value)
   #This looks for a message that comes from send
     receive do
 
@@ -92,24 +91,17 @@ defmodule Ex01 do
         {:next_is, value}
       send from, {:next_is, value}
       counter(value+1)
+
       end
-    # ...your code
-    #IO.puts("What was passed in:" + value)
-    #IO.puts("value 0 :" + value[0] + "\n value 1 : ")
-      #def calcCounter(:next_is, value), do: value = value + 1
-  #counter(value+1)
-  IO.puts("Does it ever get here?")
   end
 
   def new_counter(initial_value \\ 0) do
-    # ... your code
-            pid = spawn(fn -> counter(initial_value) end)
 
+            pid = spawn(fn -> counter(initial_value) end)
 
   end
 
   def next_value(counter_pid) do
-    # ... your code
 
           send counter_pid, {:next, self()}
           receive do

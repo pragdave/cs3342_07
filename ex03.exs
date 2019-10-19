@@ -49,18 +49,50 @@ defmodule Ex03 do
      it contains no conditional logic:  3
      it is nicely structured            7
   """
+  #pmap(1..10, 1, &(&1+1)
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+      #divideCollection will divide collection into process_count chunks
+      #main_function will spawn threads with the dividedCollection chunks in each thread
+      #thread_flattener will take the dividedCollection and flatten it to a single collection
+      divideCollection(collection,process_count) |> main_function(function) |> thread_flattener()
   end
 
   # and here...
+  def divideCollection(collection, process_count) do
+  #divides collection into chunks based on process_count
+  collection =  Enum.chunk_every(collection, div(Enum.count(collection), process_count),div(Enum.count(collection), process_count),[])
+  end
 
+  def main_function(collection_chunks, function) do
+      #for each new chunk, a thread is spawned
+      #then the thread functions will return the updated chunks
+       Enum.map(collection_chunks, fn current_collection_chunk -> spawn(Ex03, :thread_function, [current_collection_chunk, function, self()]) end)
+        |> Enum.map(fn thread_process ->
+        ( receive do
+          {^thread_process, final_collection} ->
+            final_collection
+        end)
+        end)
+  end
+
+  def thread_function(current_collection_chunk, function, from) do
+    #Each element inside of the chunk will be put through the function
+    #The updated collection will be sent back to main_function
+    updated_collection_chunk = Enum.map(current_collection_chunk, fn current_collection_chunk_element -> function.(current_collection_chunk_element) end)
+    send from, {self(), updated_collection_chunk}
+  end
+
+  def thread_flattener(final_collection) do
+    #The divided collection is flatten into a single collection
+    Enum.flat_map(final_collection, fn x -> x end)
+  end
 end
 
-
-
+#^pid
+#send to threads
+#in same method, recieve results in a single map
+#in the end, use flatten so its a single
 ######### no changes below here #############
 
 ExUnit.start
