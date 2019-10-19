@@ -79,10 +79,6 @@ defmodule Ex01 do
         send from, {:next_is, value}
         counter(value + 1)
         
-       
-      # {:next_is, val} ->
-      #   send(val, value + 1)
-        
     end
   end
 

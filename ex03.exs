@@ -51,12 +51,43 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
     # I'm hoping to see a simple pipeline as the body of this function...
+    generate(collection)
+    |> split(process_count)
+    |> map(function)
+    |>List.flatten
   end
 
-  # and here...
 
+  def generate(collection) do
+    Enum.map(collection, fn val -> val end)
+  end
+
+  #Split up connection based on thread count
+  def split(collection, process_count) do
+    num = div(Enum.count(collection) , process_count)
+    Enum.chunk_every(collection, num)
+  end
+
+  #Assign each sublist to a thread
+  def map(collection, function) do
+    Enum.map(collection, fn subCollection -> build(subCollection, function) end)
+    |>Enum.map(fn pid->(receive do {^pid, value} -> value end) end)
+  end
+
+  #Creates a new thread on sublist
+  def build(chunk, function) do
+    spawn(Ex03, :run, [chunk, function, self()])
+  end
+
+
+  #Recursively run on the sub collection
+  def run(collection, function, from) do
+    sublist = collection |> Enum.map(fn val -> function.(val) end)
+    send from, {self(), sublist}
+  end
+
+  
 end
 
 
