@@ -52,11 +52,42 @@ defmodule Ex03 do
   """
 
   def pmap(collection, process_count, function) do
-    # your code goes here
-    # I'm hoping to see a simple pipeline as the body of this function...
+    collection
+      |> splitChunks(process_count) 
+      |> convertProcess(function) 
+      |> runProc()
   end
 
-  # and here...
+  def splitChunks(collection, process_count) do
+    l = Enum.count(collection)
+    cE = div(l, process_count)
+    Enum.chunk_every(collection, cE)
+  end
+
+  def convertProcess(collection, function) do
+    Enum.map(collection, fn minList -> spawn fn() -> applyFunc(minList, function) end end)
+  end
+
+  def applyFunc(collection, function) do
+    receive do
+      {:apply, pid} ->
+        res = Enum.map(collection, fn x -> function.(x) end)
+        send pid, {:run, res}
+        applyFunc(collection, function)
+    end
+  end
+
+  def runProc(collection) do
+    Enum.flat_map(collection, fn x -> indivProc(x) end)
+  end
+
+  def indivProc(pid) do
+    send pid, {:apply, self()}
+    receive do
+      {:run, res} ->
+        send pid, res
+    end
+  end
 
 end
 
